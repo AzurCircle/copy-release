@@ -30,7 +30,7 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	let data = response.data
 	if (shouldMigrateTauriManifest) {
 		if (asset.name === 'latest.json') {
-			debug(data)
+			debug(typeof data)
 			// data = migrateTauriManifest(data)
 		}
 	}
