@@ -28889,10 +28889,11 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 });
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
     const response = await fetch(asset.browser_download_url, {
-        headers: { Authorization: `token ${token}` },
+        headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
     });
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(await response.text());
     node_assert__WEBPACK_IMPORTED_MODULE_2___default()(response.ok, `Failed to fetch asset ${asset.name}`);
-    return await response.text();
+    return Buffer.from(await response.arrayBuffer());
 });
 const awaitedSrcAssets = await Promise.all(srcAssets);
 const destRelease = await destOctokit.rest.repos.createRelease({
@@ -28908,6 +28909,7 @@ for (const [index, asset] of srcRelease.data.assets.entries()) {
         repo: destRepoName,
         release_id: destRelease.data.id,
         name: asset.name,
+        // @ts-expect-error
         data: awaitedSrcAssets[index],
         headers: { 'content-type': asset.content_type },
     });
