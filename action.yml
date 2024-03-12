@@ -3,7 +3,7 @@ description: Copy release to another repository
 author: Tony
 inputs:
     token:
-        description: Token for the current repository, ${{ secrets.GITHUB_TOKEN }} for example
+        description: "Token for the current repository, ${{ secrets.GITHUB_TOKEN }} for example"
         required: true
     destination-repository:
         description: Copy release to this repository
