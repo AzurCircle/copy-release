@@ -28874,7 +28874,7 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('token');
 const destRepo = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-repository');
 const destToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-token') || token;
-const [destRepoOwner, destRepoName] = destRepo.split('/')[0];
+const [destRepoOwner, destRepoName] = destRepo.split('/');
 if (!destRepoOwner || !destRepoName) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.error)('Invalid destination repository');
 }
@@ -28886,7 +28886,6 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 });
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
     // https://github.com/octokit/rest.js/issues/12
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(asset.browser_download_url);
     const response = await srcOctokit.request('GET /repos/:owner/:repo/releases/assets/:asset_id', {
         owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
         repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
