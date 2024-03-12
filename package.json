@@ -1,6 +1,7 @@
 {
 	"scripts": {
-		"build": "ncc build src/index.ts --license licenses.txt --target es2020 --out dist"
+		"build": "ncc build src/index.ts --license licenses.txt --target es2020 --out dist",
+		"watch": "ncc build --watch src/index.ts --license licenses.txt --target es2020 --out dist"
 	},
 	"devDependencies": {
 		"@types/node": "^20.x",
