@@ -6,7 +6,7 @@ const token = getInput('token')
 const destRepo = getInput('destination-repository')
 const destToken = getInput('destination-token') || token
 
-const [destRepoOwner, destRepoName] = destRepo.split('/')[0]
+const [destRepoOwner, destRepoName] = destRepo.split('/')
 if (!destRepoOwner || !destRepoName) {
 	error('Invalid destination repository')
 }
@@ -21,7 +21,6 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	// https://github.com/octokit/rest.js/issues/12
-	debug(asset.browser_download_url)
 	const response = await srcOctokit.request('GET /repos/:owner/:repo/releases/assets/:asset_id', {
 		owner: context.repo.owner,
 		repo: context.repo.repo,
