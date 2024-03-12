@@ -1,4 +1,4 @@
-import { error, getInput } from '@actions/core'
+import { debug, error, getInput } from '@actions/core'
 import { context, getOctokit } from '@actions/github'
 import assert from 'node:assert'
 
@@ -23,6 +23,7 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	const response = await fetch(asset.browser_download_url, {
 		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
+	debug(await response.text())
 	assert(response.ok, `Failed to fetch asset ${asset.name}`)
 	return Buffer.from(await response.arrayBuffer())
 })
