@@ -28869,24 +28869,60 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5438);
 /* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var node_assert__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(8061);
+/* harmony import */ var node_assert__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(node_assert__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('token');
 const destRepo = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-repository');
 const destToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-token') || token;
+const [destRepoOwner, destRepoName] = destRepo.split('/')[0];
+if (!destRepoOwner || !destRepoName) {
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.error)('Invalid destination repository');
+}
 const srcOctokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
-const destOctokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(token);
-const release = await srcOctokit.rest.repos.getRelease();
-await destOctokit.rest.repos.createRelease({
-    owner: destRepo.split('/')[0],
-    repo: destRepo.split('/')[1],
-    tag_name: release.data.tag_name,
-    name: release.data.name || undefined,
-    body: release.data.body || undefined,
-    draft: release.data.draft,
-    prerelease: release.data.prerelease,
-    target_commitish: release.data.target_commitish,
+const destOctokit = (0,_actions_github__WEBPACK_IMPORTED_MODULE_1__.getOctokit)(destToken);
+const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
+    owner: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.owner,
+    repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
 });
+const srcAssets = srcRelease.data.assets.map(async (asset) => {
+    const response = await fetch(asset.browser_download_url, {
+        headers: { Authorization: `token ${token}` },
+    });
+    node_assert__WEBPACK_IMPORTED_MODULE_2___default()(response.ok, `Failed to fetch asset ${asset.name}`);
+    return await response.text();
+});
+const awaitedSrcAssets = await Promise.all(srcAssets);
+const destRelease = await destOctokit.rest.repos.createRelease({
+    owner: destRepoOwner,
+    repo: destRepoName,
+    tag_name: srcRelease.data.tag_name,
+    name: srcRelease.data.name || undefined,
+    body: srcRelease.data.body || undefined,
+});
+for (const [index, asset] of srcRelease.data.assets.entries()) {
+    destOctokit.rest.repos.uploadReleaseAsset({
+        owner: destRepoOwner,
+        repo: destRepoName,
+        release_id: destRelease.data.id,
+        name: asset.name,
+        data: awaitedSrcAssets[index],
+        headers: { 'content-type': asset.content_type },
+    });
+}
+// await Promise.all(
+// 	awaitedSrcAssets.map((asset) =>
+// 		destOctokit.rest.repos.uploadReleaseAsset({
+// 			owner: destRepoOwner,
+// 			repo: destRepoName,
+// 			release_id: destRelease.data.id,
+// 			name: asset.data.name,
+// 			data: ,
+// 		})
+// 	)
+// )
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
@@ -28974,6 +29010,13 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("https");
 /***/ ((module) => {
 
 module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("net");
+
+/***/ }),
+
+/***/ 8061:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:assert");
 
 /***/ }),
 
