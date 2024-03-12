@@ -11,6 +11,9 @@ inputs:
     destination-token:
         description: Token for the destination repository, leave empty to fallback to token
         required: false
+    migrate-tauri-manifest:
+        description: Migrate tauri manifest to use the new destination repository
+        required: false
 runs:
     using: node20
     main: dist/index.js

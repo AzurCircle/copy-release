@@ -1,10 +1,10 @@
 import { debug, error, getInput } from '@actions/core'
 import { context, getOctokit } from '@actions/github'
-import assert from 'node:assert'
 
 const token = getInput('token')
 const destRepo = getInput('destination-repository')
 const destToken = getInput('destination-token') || token
+const shouldMigrateTauriManifest = getInput('migrate-tauri-manifest') === 'true'
 
 const [destRepoOwner, destRepoName] = destRepo.split('/')
 if (!destRepoOwner || !destRepoName) {
@@ -27,7 +27,14 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
 		asset_id: asset.id,
 		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
-	return response.data
+	let data = response.data
+	if (shouldMigrateTauriManifest) {
+		if (asset.name === 'lastest.json') {
+			debug(data)
+			// data = migrateTauriManifest(data)
+		}
+	}
+	return data
 })
 const awaitedSrcAssets = await Promise.all(srcAssets)
 
@@ -66,4 +73,8 @@ async function getExistingRelease() {
 			tag: srcRelease.data.tag_name,
 		})
 	} catch (error) {}
+}
+
+function migrateTauriManifest(data: string) {
+
 }

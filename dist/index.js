@@ -28874,6 +28874,7 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 const token = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('token');
 const destRepo = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-repository');
 const destToken = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('destination-token') || token;
+const shouldMigrateTauriManifest = (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput)('migrate-tauri-manifest') === 'true';
 const [destRepoOwner, destRepoName] = destRepo.split('/');
 if (!destRepoOwner || !destRepoName) {
     (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.error)('Invalid destination repository');
@@ -28892,7 +28893,14 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
         asset_id: asset.id,
         headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
     });
-    return response.data;
+    let data = response.data;
+    if (shouldMigrateTauriManifest) {
+        if (asset.name === 'lastest.json') {
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(data);
+            // data = migrateTauriManifest(data)
+        }
+    }
+    return data;
 });
 const awaitedSrcAssets = await Promise.all(srcAssets);
 const existingRelease = await getExistingRelease();
@@ -28929,6 +28937,8 @@ async function getExistingRelease() {
         });
     }
     catch (error) { }
+}
+function migrateTauriManifest(data) {
 }
 
 __webpack_async_result__();
