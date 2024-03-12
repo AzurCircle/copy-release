@@ -28896,7 +28896,7 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
     let data = response.data;
     if (shouldMigrateTauriManifest) {
         if (asset.name === 'latest.json') {
-            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(typeof data);
+            (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(JSON.stringify(data));
             // data = migrateTauriManifest(data)
         }
     }
