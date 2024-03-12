@@ -32,19 +32,11 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	const response = await fetch(requestOptions.url, {
 		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
-	// const response = await srcOctokit.request('GET /repos/:owner/:repo/releases/assets/:asset_id', {
-	// 	owner: context.repo.owner,
-	// 	repo: context.repo.repo,
-	// 	asset_id: asset.id,
-	// 	headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
-	// })
-	// let data = response.data
-	// if (shouldMigrateTauriManifest) {
-	// 	if (asset.name === 'latest.json') {
-	// 		await (data as ReadableStream).json()
-	// 		// data = migrateTauriManifest(data)
-	// 	}
-	// }
+	if (shouldMigrateTauriManifest) {
+		if (asset.name === 'latest.json') {
+			return migrateTauriManifest(await response.json())
+		}
+	}
 	return await response.arrayBuffer()
 })
 const awaitedSrcAssets = await Promise.all(srcAssets)
@@ -87,4 +79,12 @@ async function getExistingRelease() {
 	} catch (error) {}
 }
 
-function migrateTauriManifest(data: string) {}
+function migrateTauriManifest(manifest: { platforms: { [key: string]: { url: string } } }) {
+	for (const [platform, info] of Object.entries(manifest.platforms)) {
+		manifest.platforms[platform].url = info.url.replace(
+			`${context.repo.owner}/${context.repo.repo}`,
+			destRepo
+		)
+	}
+	return manifest
+}
