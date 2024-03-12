@@ -21,10 +21,10 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	const response = await fetch(asset.browser_download_url, {
-		headers: { Authorization: `token ${token}` },
+		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
 	assert(response.ok, `Failed to fetch asset ${asset.name}`)
-	return await response.text()
+	return Buffer.from(await response.arrayBuffer())
 })
 const awaitedSrcAssets = await Promise.all(srcAssets)
 
@@ -42,6 +42,7 @@ for (const [index, asset] of srcRelease.data.assets.entries()) {
 		repo: destRepoName,
 		release_id: destRelease.data.id,
 		name: asset.name,
+		// @ts-expect-error
 		data: awaitedSrcAssets[index],
 		headers: { 'content-type': asset.content_type },
 	})
