@@ -31,6 +31,14 @@ const srcAssets = srcRelease.data.assets.map(async (asset) => {
 })
 const awaitedSrcAssets = await Promise.all(srcAssets)
 
+const existingRelease = await getExistingRelease()
+if (existingRelease) {
+	await destOctokit.rest.repos.deleteRelease({
+		owner: destRepoOwner,
+		repo: destRepoName,
+		release_id: existingRelease.data.id,
+	})
+}
 const destRelease = await destOctokit.rest.repos.createRelease({
 	owner: destRepoOwner,
 	repo: destRepoName,
@@ -50,14 +58,12 @@ for (const [index, asset] of srcRelease.data.assets.entries()) {
 	})
 }
 
-// await Promise.all(
-// 	awaitedSrcAssets.map((asset) =>
-// 		destOctokit.rest.repos.uploadReleaseAsset({
-// 			owner: destRepoOwner,
-// 			repo: destRepoName,
-// 			release_id: destRelease.data.id,
-// 			name: asset.data.name,
-// 			data: ,
-// 		})
-// 	)
-// )
+async function getExistingRelease() {
+	try {
+		return await destOctokit.rest.repos.getReleaseByTag({
+			owner: destRepoOwner,
+			repo: destRepoName,
+			tag: srcRelease.data.tag_name,
+		})
+	} catch (error) {}
+}
