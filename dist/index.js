@@ -28888,10 +28888,11 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
     repo: _actions_github__WEBPACK_IMPORTED_MODULE_1__.context.repo.repo,
 });
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
+    // https://github.com/octokit/rest.js/issues/12
+    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(asset.browser_download_url);
     const response = await fetch(asset.browser_download_url, {
         headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
     });
-    (0,_actions_core__WEBPACK_IMPORTED_MODULE_0__.debug)(await response.text());
     node_assert__WEBPACK_IMPORTED_MODULE_2___default()(response.ok, `Failed to fetch asset ${asset.name}`);
     return Buffer.from(await response.arrayBuffer());
 });

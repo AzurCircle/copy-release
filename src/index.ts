@@ -20,10 +20,11 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 })
 
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
+	// https://github.com/octokit/rest.js/issues/12
+	debug(asset.browser_download_url)
 	const response = await fetch(asset.browser_download_url, {
 		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
-	debug(await response.text())
 	assert(response.ok, `Failed to fetch asset ${asset.name}`)
 	return Buffer.from(await response.arrayBuffer())
 })
