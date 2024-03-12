@@ -1,0 +1,16 @@
+name: Copy Release
+description: Copy release to another repository
+author: Tony
+inputs:
+    token:
+        description: Token for the current repository, ${{ secrets.GITHUB_TOKEN }} for example
+        required: true
+    destination-repository:
+        description: Copy release to this repository
+        required: true
+    destination-token:
+        description: Token for the destination repository, leave empty to fallback to token
+        required: false
+runs:
+    using: node20
+    main: dist/index.js

@@ -1,0 +1,15 @@
+{
+	"scripts": {
+		"build": "ncc build src/index.ts --license licenses.txt --target es2020 --out dist"
+	},
+	"devDependencies": {
+		"@types/node": "^20.x",
+		"@vercel/ncc": "^0.38.1",
+		"typescript": "^5.4.2"
+	},
+	"dependencies": {
+		"@actions/core": "^1.10.1",
+		"@actions/github": "^6.0.0"
+	},
+	"type": "module"
+}
