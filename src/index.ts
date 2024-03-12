@@ -21,20 +21,31 @@ const srcRelease = await srcOctokit.rest.repos.getLatestRelease({
 
 const srcAssets = srcRelease.data.assets.map(async (asset) => {
 	// https://github.com/octokit/rest.js/issues/12
-	const response = await srcOctokit.request('GET /repos/:owner/:repo/releases/assets/:asset_id', {
-		owner: context.repo.owner,
-		repo: context.repo.repo,
-		asset_id: asset.id,
+	const requestOptions = srcOctokit.request.endpoint(
+		'GET /repos/:owner/:repo/releases/assets/:asset_id',
+		{
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			asset_id: asset.id,
+		}
+	)
+	const response = await fetch(requestOptions.url, {
 		headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
 	})
-	let data = response.data
-	if (shouldMigrateTauriManifest) {
-		if (asset.name === 'latest.json') {
-			debug(JSON.stringify(data))
-			// data = migrateTauriManifest(data)
-		}
-	}
-	return data
+	// const response = await srcOctokit.request('GET /repos/:owner/:repo/releases/assets/:asset_id', {
+	// 	owner: context.repo.owner,
+	// 	repo: context.repo.repo,
+	// 	asset_id: asset.id,
+	// 	headers: { Authorization: `token ${token}`, Accept: 'application/octet-stream' },
+	// })
+	// let data = response.data
+	// if (shouldMigrateTauriManifest) {
+	// 	if (asset.name === 'latest.json') {
+	// 		await (data as ReadableStream).json()
+	// 		// data = migrateTauriManifest(data)
+	// 	}
+	// }
+	return await response.arrayBuffer()
 })
 const awaitedSrcAssets = await Promise.all(srcAssets)
 
@@ -60,6 +71,7 @@ for (const [index, asset] of srcRelease.data.assets.entries()) {
 		repo: destRepoName,
 		release_id: destRelease.data.id,
 		name: asset.name,
+		//@ts-ignore
 		data: awaitedSrcAssets[index],
 		headers: { 'content-type': asset.content_type },
 	})
@@ -75,6 +87,4 @@ async function getExistingRelease() {
 	} catch (error) {}
 }
 
-function migrateTauriManifest(data: string) {
-
-}
+function migrateTauriManifest(data: string) {}
